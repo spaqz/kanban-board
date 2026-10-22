@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './swagger';
 import { authRouter } from './routes/auth.routes';
 import { projectRouter } from './routes/project.routes';
 import { boardRouter } from './routes/board.routes';
@@ -14,6 +16,8 @@ export const createApp = () => {
   app.use(cors());
   app.use(express.json({ limit: '1mb' }));
 
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
@@ -24,9 +28,9 @@ export const createApp = () => {
   app.use('/api/columns', columnRouter);
   app.use('/api/cards', cardRouter);
 
-  app.use((err: any, _req: any, res: any, _next: any) => {
-    res.status(err.status || 500).json({ error: err.message || 'Internal error' });
-  });
+app.use((err: any, _req: any, res: any, _next: any) => {
+  res.status(err.status || 500).json({ error: err.message || 'Internal error' });
+});
 
   return app;
 };
