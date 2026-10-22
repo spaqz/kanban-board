@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  email String @unique
+  passwordHash String
+  name String
+  role String @default("DEVELOPER")
+  createdAt DateTime @default(now())
+
+  ownedProjects Project[] @relation("ProjectOwner")
+  assignedCards Card[] @relation("Assignee")
+  comments Comment[]
+  activities Activity[]
+  projects ProjectMember[]
+}
+
+model Project {
+  id String @id @default(uuid())
+  name String
+  description String?
+  ownerId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner User @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members ProjectMember[]
+  boards Board[]
+}
+
+model ProjectMember {
+  id String @id @default(uuid())
+  projectId String
+  userId String
+  role String @default("DEVELOPER")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model Board {
+  id String @id @default(uuid())
+  name String
+  projectId String
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  columns Column[]
+}
+
+model Column {
+  id String @id @default(uuid())
+  name String
+  order Int
+  wipLimit Int?
+  boardId String
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards Card[]
+
+  @@index([boardId, order])
+}
+
+model Card {
+  id String @id @default(uuid())
+  title String
+  description String?
+  priority String @default("MEDIUM")
+  deadline DateTime?
+  order Int
+  columnId String
+  assigneeId String?
+  labels String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignee User? @relation("Assignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  comments Comment[]
+  files Attachment[]
+  history Activity[]
+
+  @@index([columnId, order])
+}
+
+model Comment {
+  id String @id @default(uuid())
+  text String
+  cardId String
+  authorId String
+  createdAt DateTime @default(now())
+
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id])
+}
+
+model Attachment {
+  id String @id @default(uuid())
+  filename String
+  url String
+  cardId String
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id String @id @default(uuid())
+  action String
+  payload String?
+  cardId String?
+  userId String
+  createdAt DateTime @default(now())
+
+  card Card? @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+}
