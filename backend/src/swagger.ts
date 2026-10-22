@@ -24,8 +24,61 @@ const options: swaggerJsdoc.Options = {
       },
     },
     security: [{ bearerAuth: [] }],
+    paths: {
+      '/api/auth/register': {
+        post: {
+          summary: 'Регистрация пользователя',
+          tags: ['Auth'],
+          security: [],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    email: { type: 'string', example: 'user@test.com' },
+                    password: { type: 'string', example: 'password123' },
+                    name: { type: 'string', example: 'Иван' },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '201': { description: 'Пользователь создан' },
+            '409': { description: 'Email уже занят' },
+          },
+        },
+      },
+      '/api/auth/login': {
+        post: {
+          summary: 'Вход в систему',
+          tags: ['Auth'],
+          security: [],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    email: { type: 'string', example: 'user@test.com' },
+                    password: { type: 'string', example: 'password123' },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '200': { description: 'Успешный вход' },
+            '401': { description: 'Неверный пароль' },
+          },
+        },
+      },
+    },
   },
-  apis: ['./src/routes/*.ts'],
+  apis: [], 
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
