@@ -1,0 +1,160 @@
+/* =========================================================
+   БАЗОВЫЕ СТИЛИ И СБРОС
+   ========================================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f4f5f7;
+    color: #070401;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* =========================================================
+   СТИЛИ ДЛЯ КАРКАСА ПРИЛОЖЕНИЯ (САЙДБАР И КОНТЕНТ)
+   ========================================================= */
+.app-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+.sidebar {
+    width: 64px;
+    background: #1d2125;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    flex-shrink: 0;
+}
+.sidebar-logo {
+    font-size: 28px;
+    margin-bottom: 32px;
+    cursor: pointer;
+    user-select: none;
+}
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    align-items: center;
+}
+.nav-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    font-size: 20px;
+    color: #9fadbc;
+    transition: background 0.2s, color 0.2s;
+}
+.nav-item:hover {
+    background: #2c333a;
+    color: #ffffff;
+}
+.nav-item.active {
+    background: #0052cc;
+    color: #ffffff;
+}
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f4f5f7;
+    overflow-y: auto;
+}
+.top-header {
+    padding: 24px 32px 16px;
+    background: #ffffff;
+    border-bottom: 1px solid #dfe1e6;
+}
+.top-header h1 {
+    font-size: 24px;
+    color: #172b4d;
+    font-weight: 700;
+}
+.content-body {
+    padding: 32px;
+    flex: 1;
+}
+
+/* =========================================================
+   СТИЛИ ЛЕНДИНГА (ШАПКА, ГЕРОЙ, ПРЕВЬЮ)
+   ========================================================= */
+.landing-page { max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; }
+.landing-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
+.logo { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 700; color: #172b4d; }
+.logo span { font-size: 26px; }
+.landing-nav { display: flex; align-items: center; gap: 32px; }
+.landing-nav a { font-size: 15px; font-weight: 500; color: #42526e; transition: color 0.2s; }
+.landing-nav a:hover { color: #0052cc; }
+.btn-try { background: #172b4d; color: #fff !important; padding: 10px 20px; border-radius: 30px; font-weight: 600; transition: background 0.2s; }
+.btn-try:hover { background: #0e2b5e; }
+.hero-section { text-align: center; padding: 60px 0 80px; }
+.hero-section h1 { font-size: 48px; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.5px; }
+.hero-section p { font-size: 18px; color: #6b778c; max-width: 600px; margin: 0 auto 32px; }
+.btn-main-action { display: inline-block; background: #172b4d; color: #fff; padding: 16px 32px; border-radius: 30px; font-size: 16px; font-weight: 600; transition: background 0.2s; }
+.btn-main-action:hover { background: #a38181; }
+.preview-section { background: #ffffff; border-radius: 24px; padding: 40px; box-shadow: 0 12px 40px rgba(9, 30, 66, 0.08); border: 1px solid #ebecf0; }
+.preview-container { display: flex; flex-direction: column; gap: 24px; }
+.preview-label { text-align: center; font-size: 14px; font-weight: 600; color: #6b778c; text-transform: uppercase; letter-spacing: 1px; }
+
+/* =========================================================
+   СТИЛИ ДЛЯ РАБОЧЕЙ КАНБАН-ДОСКИ
+   ========================================================= */
+.board { display: flex; gap: 16px; align-items: flex-start; overflow-x: auto; overflow-y: hidden; padding-bottom: 16px; width: 100%; min-height: 200px; scrollbar-width: thin; }
+.board::-webkit-scrollbar:vertical { display: none; }
+.board::-webkit-scrollbar:horizontal { height: 8px; }
+.board::-webkit-scrollbar-thumb { background: #c1c7d0; border-radius: 4px; }
+.board::-webkit-scrollbar-track { background: transparent; }
+.column { background: #ebecf0; border-radius: 12px; width: 280px; min-width: 280px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.column-header { display: flex; align-items: center; gap: 8px; padding: 4px 20px 8px 4px; }
+.column-title { flex: 1; font-weight: 600; font-size: 15px; border: none; background: transparent; color: #332a29; outline: none; padding: 4px 6px; border-radius: 6px; cursor: text; }
+.column-title:focus { background: #fff; box-shadow: 0 0 0 2px #4c9aff; }
+.column-count { background: #dfe1e6; color: #42526e; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 2px 8px; min-width: 24px; text-align: center; margin-left: -15px; }
+.menu-wrap { position: relative; }
+.menu-btn { border: none; background: transparent; cursor: pointer; font-size: 18px; line-height: 1; padding: 4px 8px; border-radius: 6px; color: #42526e; margin-left: -1px; }
+.menu-btn:hover { background: #dfe1e6; }
+.menu-dropdown { position: absolute; right: 0; top: 110%; background: #fff; border-radius: 8px; box-shadow: 0 15px 20px rgba(138, 32, 13, 0.25); padding: 6px; min-width: 180px; display: none; z-index: 100; }
+.menu-dropdown.open { display: block; }
+.menu-dropdown button { display: block; width: 100%; text-align: left; border: none; background: transparent; padding: 8px 10px; font-size: 14px; border-radius: 6px; cursor: pointer; color: #172b4d; white-space: nowrap; }
+.menu-dropdown button:hover { background: #f4f5f7; }
+.menu-dropdown button.danger { color: #d93025; }
+.task-list { display: flex; flex-direction: column; gap: 8px; min-height: 4px; }
+.task { background: #fff; border-radius: 8px; padding: 10px 12px; box-shadow: 0 1px 2px rgba(9,30,66,.15); cursor: pointer; position: relative; }
+.task:hover { box-shadow: 0 2px 6px rgba(9,30,66,.25); }
+.task-date { font-size: 11px; color: #6b778c; display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+.task-text { font-size: 14px; line-height: 1.35; word-break: break-word; }
+.task-tag { display: inline-block; margin-top: 8px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.tag-finance  { background: #ffe8b3; color: #7a5900; }
+.tag-personal { background: #d7f5cd; color: #216e2c; }
+.tag-career   { background: #d5e5ff; color: #1c3d8f; }
+.tag-home     { background: #e0d4ff; color: #4b2a91; }
+.tag-shopping { background: #ffd6e7; color: #8f1c4d; }
+.tag-other    { background: #e2e5ea; color: #42526e; }
+.task-del { position: absolute; top: 6px; right: 6px; border: none; background: transparent; cursor: pointer; color: #b3b9c4; font-size: 14px; line-height: 1; padding: 2px 4px; border-radius: 4px; opacity: 0; transition: opacity .15s; }
+.task:hover .task-del { opacity: 1; }
+.task-del:hover { background: #ffe5e5; color: #d93025; }
+.add-form { display: none; flex-direction: column; gap: 6px; background: #fff; border-radius: 8px; padding: 10px; box-shadow: 0 1px 3px rgba(9,30,66,.2); }
+.add-form.open { display: flex; }
+.add-form input, .add-form select { width: 100%; border: 2px solid #dfe1e6; border-radius: 6px; padding: 7px 9px; font-size: 14px; font-family: inherit; outline: none; color: #172b4d; }
+.add-form input:focus, .add-form select:focus { border-color: #4c9aff; }
+.form-row { display: flex; gap: 6px; }
+.form-row button { border: none; border-radius: 6px; padding: 8px 12px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-save   { background: #0052cc; color: #fff; }
+.btn-save:hover { background: #0047b3; }
+.btn-cancel { background: #e2e5ea; color: #42526e; }
+.btn-cancel:hover { background: #d5d9e0; }
+.add-column-btn { min-width: 260px; background: #ebecf0; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 600; color: #42526e; cursor: pointer; text-align: left; flex-shrink: 0; }
+.add-column-btn:hover { background: #dfe1e6; }

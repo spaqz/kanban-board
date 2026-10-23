@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Текущие процессы | Канбано</title>
+    <link rel="stylesheet" href="body.css">
+    <link rel="stylesheet" href="processing.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-logo">🐗</div>
+            <nav class="sidebar-nav">
+                <a href="board.html" class="nav-item" title="Доска задач">📋</a>
+                <a href="processing.html" class="nav-item active" title="Процессы">👥</a>
+                <a href="profile.html" class="nav-item" title="Профиль">⚙️</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Текущие процессы</h1>
+            </header>
+            <section class="content-body">
+                
+                <div class="process-wrapper">
+                    <div class="process-header">
+                        <h2>Все активные задачи</h2>
+                        <span class="process-total" id="totalTasks">0</span>
+                    </div>
+                    
+                    <div class="process-list" id="processList">
+                        <p class="loading-text">Загрузка задач...</p>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        (async function loadProcesses() {
+            const listContainer = document.getElementById('processList');
+            const totalElement = document.getElementById('totalTasks');
+
+            try {
+                // Если ее бэкенд на другом порту, поменяй путь в api.js, тут оставляем как есть
+                const boardData = await api.request('/board');
+                
+                let allTasks = [];
+                boardData.forEach(col => {
+                    col.tasks.forEach(task => {
+                        allTasks.push({ ...task, columnName: col.title });
+                    });
+                });
+
+                totalElement.textContent = allTasks.length;
+
+                if (allTasks.length === 0) {
+                    listContainer.innerHTML = '<p class="empty-msg">Пока нет активных задач. Создайте их на доске!</p>';
+                    return;
+                }
+
+                listContainer.innerHTML = '';
+                allTasks.forEach(task => {
+                    const card = document.createElement('div');
+                    card.className = `process-card ${task.completed ? 'completed' : ''}`;
+                    
+                    let dateHtml = '';
+                    if (task.date) {
+                        const d = new Date(task.date);
+                        if (!isNaN(d.getTime())) {
+                            const months = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+                            dateHtml = `<span class="process-date">📅 ${d.getDate()} ${months[d.getMonth()]}</span>`;
+                        }
+                    }
+
+                    card.innerHTML = `
+                        <div class="process-info">
+                            <span class="process-status">${task.completed ? '✓' : '○'}</span>
+                            <span class="process-text">${task.text || task.title}</span>
+                        </div>
+                        <div class="process-meta">
+                            ${dateHtml}
+                            ${task.tag ? `<span class="task-tag ${task.tagClass}">${task.tag}</span>` : ''}
+                            <span class="process-col">${task.columnName}</span>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
+                });
+
+            } catch (err) {
+                listContainer.innerHTML = `<p class="error-msg">Ошибка: ${err.message}</p>`;
+                totalElement.textContent = '0';
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+/* =========================================================
+   СТРАНИЦА ПРОФИЛЯ
+   ========================================================= */
+
+.profile-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* -------- Верхняя карточка с аватаром -------- */
+.profile-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    box-shadow: 0 1px 3px rgba(9, 30, 66, 0.1);
+    border: 1px solid #ebecf0;
+}
+
+.avatar-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    cursor: pointer;
+    background: linear-gradient(135deg, #0052cc, #2684ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 82, 204, 0.25);
+}
+
+.avatar-placeholder {
+    color: #fff;
+    font-size: 42px;
+    font-weight: 700;
+    user-select: none;
+    letter-spacing: 1px;
+}
+
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 26px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.profile-info-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #172b4d;
+    margin-bottom: 6px;
+    word-break: break-word;
+}
+
+.profile-role {
+    font-size: 15px;
+    color: #6b778c;
+    margin-bottom: 12px;
+}
+
+.profile-badge {
+    display: inline-block;
+    background: #e6f0ff;
+    color: #0052cc;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+.btn-remove-avatar {
+    margin-top: 12px;
+    background: transparent;
+    color: #d93025;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-remove-avatar:hover {
+    background: #ffe5e5;
+}
+
+/* -------- Карточка формы -------- */
+.profile-form-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(9, 30, 66, 0.1);
+    border: 1px solid #ebecf0;
+}
+
+.profile-form-card h3 {
+    font-size: 18px;
+    color: #172b4d;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #ebecf0;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.profile-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.profile-form label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #42526e;
+}
+
+.profile-form input,
+.profile-form textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #dfe1e6;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: #172b4d;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    background: #fafbfc;
+    box-sizing: border-box;
+}
+
+.profile-form input:focus,
+.profile-form textarea:focus {
+    border-color: #4c9aff;
+    background: #fff;
+}
+
+.profile-form textarea {
+    resize: vertical;
+    min-height: 90px;
+}
+
+.btn-save-profile {
+    align-self: flex-start;
+    background: #0052cc;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 8px;
+}
+
+.btn-save-profile:hover {
+    background: #0047b3;
+}
+
+/* -------- Адаптив -------- */
+@media (max-width: 640px) {
+    .profile-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 24px;
+        gap: 20px;
+    }
+    .btn-save-profile {
+        align-self: stretch;
+    }
+}

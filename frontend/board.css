@@ -1,0 +1,169 @@
+/* =========================================================
+   СПЕЦИФИЧЕСКИЕ СТИЛИ ДЛЯ РАБОЧЕЙ ДОСКИ (board.html)
+   ========================================================= */
+
+/* --- ФИКС: ПРИЖИМАЕМ ПОЛЗУНОК К НИЗУ --- */
+
+/* 1. Отключаем прокрутку у всего основного контента, чтобы скроллилась только доска */
+.main-content {
+    overflow: hidden; 
+}
+
+/* 2. Делаем контейнер с контентом flex-колонкой */
+.content-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    padding-bottom: 8px; /* Уменьшили нижний отступ, чтобы ползунок был у края */
+}
+
+/* 3. Доска забирает всё оставшееся место по высоте */
+.board {
+    flex: 1;
+    min-height: 0; /* Важно для работы скролла внутри flex */
+    overflow-y: auto; /* Добавляем вертикальный скролл, если задач станет слишком много */
+    padding-bottom: 8px; /* Место под горизонтальный ползунок */
+}
+
+/* Настройка скроллбара (чтобы был красивым) */
+.board::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+.board::-webkit-scrollbar-thumb {
+    background: #c1c7d0;
+    border-radius: 4px;
+}
+.board::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* =========================================================
+   СТИЛИ ЭЛЕМЕНТОВ (КНОПКИ, ЗАДАЧИ)
+   ========================================================= */
+
+/* Кнопка создания первой колонки (когда доска пустая) */
+.empty-board-state {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 50px;
+    width: 100%;
+    height: 100%;
+}
+
+.btn-create-first-col {
+    background: #ffffff;
+    border: 2px dashed #c1c7d0;
+    border-radius: 12px;
+    padding: 30px 60px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #42526e;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-create-first-col:hover {
+    background: #f4f5f7;
+    border-color: #0052cc;
+    color: #0052cc;
+}
+
+.btn-create-first-col span {
+    font-size: 32px;
+}
+
+/* Верхняя строка карточки (кружок + текст + удаление) */
+.task-header-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.task-header-row .task-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.35;
+    color: #172b4d;
+}
+
+/* Кружок для отметки выполнения */
+.task-check {
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    color: #c1c7d0;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.task-check:hover {
+    color: #0052cc;
+}
+
+/* Состояние выполненной задачи */
+.task.completed .task-check {
+    color: #216e2c;
+}
+
+.task.completed .task-text {
+    text-decoration: line-through;
+    color: #6b778c;
+}
+
+/* Кнопка добавления задачи в колонку */
+.add-task-btn {
+    background: transparent;
+    border: none;
+    color: #5e6c84;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 6px;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.add-task-btn:hover {
+    background: #dfe1e6;
+    color: #172b4d;
+}
+
+/* Настройка нижней части карточки (тег и дата) */
+.task-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.task-footer .task-tag {
+    margin-top: 0;
+}
+
+/* Крестик удаления */
+.task-del {
+    opacity: 0;
+    color: #b3b9c4;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 14px;
+    padding: 2px;
+    transition: opacity 0.2s;
+}
+.task:hover .task-del { 
+    opacity: 1; 
+}
+.task-del:hover { 
+    color: #d93025; 
+}

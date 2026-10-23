@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доска | Канбано</title>
+    <!-- Базовые стили (где уже есть цвета тегов и колонок) -->
+    <link rel="stylesheet" href="body.css">
+    <!-- Новые стили для нашей рабочей доски -->
+    <link rel="stylesheet" href="board.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Черная боковая панель слева -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">🐗</div>
+            <nav class="sidebar-nav">
+                <a href="board.html" class="nav-item active" title="Доска задач">📋</a>
+                <a href="processing.html" class="nav-item" title="Управление командой / Processing">👥</a>
+                <a href="profile.html" class="nav-item" title="Профиль">⚙️</a>
+            </nav>
+        </aside>
+
+        <!-- Основная рабочая область справа -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Задачи</h1>
+            </header>
+            <section class="content-body">
+                
+                <!-- Сюда JS будет рендерить колонки и задачи -->
+                <div class="board" id="board"></div>
+                
+            </section>
+        </main>
+    </div>
+
+    <!-- Подключаем логику доски -->
+    <script src="api.js"></script>
+    <script src="board.js"></script>
+</body>
+</html>

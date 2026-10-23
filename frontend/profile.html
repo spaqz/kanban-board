@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль | Канбано</title>
+    <link rel="stylesheet" href="body.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Черная боковая панель слева -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">🐗</div>
+            <nav class="sidebar-nav">
+                <a href="board.html" class="nav-item" title="Доска задач">📋</a>
+                <a href="processing.html" class="nav-item" title="Управление командой / Processing">👥</a>
+                <a href="profile.html" class="nav-item active" title="Профиль">⚙️</a>
+            </nav>
+        </aside>
+
+        <!-- Основная область -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Профиль</h1>
+            </header>
+
+            <section class="content-body">
+                <div class="profile-wrapper">
+
+                    <!-- Верхняя карточка с аватаром -->
+                    <div class="profile-card">
+                        <div class="avatar-container" title="Нажмите, чтобы загрузить фото">
+                            <!-- Заглушка с инициалами -->
+                            <div class="avatar-placeholder" id="avatarPlaceholder">📸</div>
+                            <!-- Превью загруженного аватара -->
+                            <img src="" alt="Аватар" class="user-avatar" id="avatarPreview" style="display:none;">
+                            <!-- Иконка камеры при наведении -->
+                            <label for="avatarInput" class="avatar-overlay">📷</label>
+                            <input type="file" id="avatarInput" accept="image/*" hidden>
+                        </div>
+
+                        <div class="profile-info-section">
+                            <h2 class="profile-name" id="profileNameDisplay">Ваше имя</h2>
+                            <p class="profile-role" id="profileRoleDisplay">Ваша должность</p>
+                            <span class="profile-badge">Активный сотрудник</span>
+                            <div>
+                                <button class="btn-remove-avatar" id="removeAvatarBtn" type="button" style="display:none;">
+                                    Удалить фото
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Карточка редактирования -->
+                    <div class="profile-form-card">
+                        <h3>Личная информация</h3>
+                        <form class="profile-form" id="profileForm">
+                            <div class="form-group">
+                                <label for="userName">Имя пользователя</label>
+                                <input type="text" id="userName" value="Иван Иванов" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="userEmail">Email</label>
+                                <input type="email" id="userEmail" value="ivan@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="userRole">Должность</label>
+                                <input type="text" id="userRole" value="Разработчик">
+                            </div>
+                            <div class="form-group">
+                                <label for="userBio">О себе</label>
+                                <textarea id="userBio" rows="4" placeholder="Расскажите о себе...">Люблю чистый код и канбан-доски.</textarea>
+                            </div>
+                            <button type="submit" class="btn-save-profile">Сохранить изменения</button>
+                            <button type="button" id="logoutBtn" class="btn-remove-avatar" style="align-self:flex-start;">Выйти из аккаунта</button>
+                        </form>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        const avatarInput        = document.getElementById('avatarInput');
+        const avatarPreview      = document.getElementById('avatarPreview');
+        const avatarPlaceholder  = document.getElementById('avatarPlaceholder');
+        const removeAvatarBtn    = document.getElementById('removeAvatarBtn');
+        const userNameInput      = document.getElementById('userName');
+        const userRoleInput      = document.getElementById('userRole');
+        const profileNameDisplay = document.getElementById('profileNameDisplay');
+        const profileRoleDisplay = document.getElementById('profileRoleDisplay');
+        const profileForm        = document.getElementById('profileForm');
+
+        // Получить инициалы из ФИО (первые буквы первых двух слов)
+        function getInitials(name) {
+            if (!name || !name.trim()) return '?';
+            return name.trim().split(/\s+/)
+                .map(w => w[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase();
+        }
+
+        // 📷 Загрузка аватара через FileReader
+        avatarInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                avatarPreview.src = ev.target.result;
+                avatarPreview.style.display = 'block';
+                avatarPlaceholder.style.display = 'none';
+                removeAvatarBtn.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ❌ Удаление аватара (возврат к заглушке с инициалами)
+        removeAvatarBtn.addEventListener('click', () => {
+            avatarPreview.src = '';
+            avatarPreview.style.display = 'none';
+            avatarPlaceholder.style.display = 'flex';
+            removeAvatarBtn.style.display = 'none';
+            avatarInput.value = '';
+        });
+
+        // 🔄 Обновление имени и инициалов в реальном времени
+        userNameInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            profileNameDisplay.textContent = val || 'Без имени';
+            avatarPlaceholder.textContent = getInitials(val);
+        });
+
+        // 🔄 Обновление должности в реальном времени
+        userRoleInput.addEventListener('input', (e) => {
+            profileRoleDisplay.textContent = e.target.value || 'Не указано';
+        });
+
+        // 💾 Имитация сохранения формы
+        // Загрузка профиля с сервера
+        (async function loadProfile() {
+            try {
+                const p = await api.request('/profile');
+                userNameInput.value = p.full_name || p.username;
+                document.getElementById('userEmail').value = p.email || '';
+                userRoleInput.value = p.role || '';
+                document.getElementById('userBio').value = p.bio || '';
+                profileNameDisplay.textContent = userNameInput.value || 'Без имени';
+                profileRoleDisplay.textContent = userRoleInput.value || 'Не указано';
+                avatarPlaceholder.textContent = getInitials(userNameInput.value);
+                if (p.avatar) {
+                    avatarPreview.src = p.avatar;
+                    avatarPreview.style.display = 'block';
+                    avatarPlaceholder.style.display = 'none';
+                    removeAvatarBtn.style.display = 'inline-block';
+                }
+            } catch (err) { console.error(err.message); }
+        })();
+
+        // Сохранение профиля на сервер
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = profileForm.querySelector('.btn-save-profile');
+            const original = btn.textContent;
+            try {
+                await api.request('/profile', {
+                    method: 'PUT',
+                    body: {
+                        full_name: userNameInput.value.trim(),
+                        email: document.getElementById('userEmail').value.trim(),
+                        role: userRoleInput.value.trim(),
+                        bio: document.getElementById('userBio').value,
+                        avatar: avatarPreview.style.display === 'none' ? null : avatarPreview.src
+                    }
+                });
+                btn.textContent = '✓ Сохранено';
+                btn.style.background = '#216e2c';
+            } catch (err) {
+                btn.textContent = '✕ ' + err.message;
+                btn.style.background = '#d93025';
+            }
+            setTimeout(() => {
+                btn.textContent = original;
+                btn.style.background = '';
+            }, 2000);
+        });
+
+        // Выход из аккаунта
+        document.getElementById('logoutBtn').addEventListener('click', () => api.logout());
+    </script>
+</body>
+</html>
