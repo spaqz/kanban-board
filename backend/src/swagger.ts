@@ -25,6 +25,7 @@ const options: swaggerJsdoc.Options = {
     },
     security: [{ bearerAuth: [] }],
     paths: {
+      // ================= AUTH =================
       '/api/auth/register': {
         post: {
           summary: 'Регистрация пользователя',
@@ -74,6 +75,97 @@ const options: swaggerJsdoc.Options = {
             '200': { description: 'Успешный вход' },
             '401': { description: 'Неверный пароль' },
           },
+        },
+      },
+      // ================= PROJECTS =================
+      '/api/projects': {
+        get: {
+          summary: 'Получить все проекты пользователя',
+          tags: ['Projects'],
+          responses: { '200': { description: 'Список проектов' } },
+        },
+        post: {
+          summary: 'Создать новый проект',
+          tags: ['Projects'],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string', example: 'Мой проект' },
+                    description: { type: 'string', example: 'Описание' },
+                  },
+                },
+              },
+            },
+          },
+          responses: { '201': { description: 'Проект создан' } },
+        },
+      },
+      // ================= BOARDS =================
+      '/api/projects/{projectId}/boards': {
+        get: {
+          summary: 'Получить доски проекта',
+          tags: ['Boards'],
+          parameters: [{ name: 'projectId', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: { '200': { description: 'Список досок' } },
+        },
+        post: {
+          summary: 'Создать доску в проекте',
+          tags: ['Boards'],
+          parameters: [{ name: 'projectId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { name: { type: 'string', example: 'Новая доска' } } },
+              },
+            },
+          },
+          responses: { '201': { description: 'Доска создана' } },
+        },
+      },
+      // ================= COLUMNS =================
+      '/api/boards/{boardId}/columns': {
+        post: {
+          summary: 'Создать колонку на доске',
+          tags: ['Columns'],
+          parameters: [{ name: 'boardId', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { type: 'object', properties: { name: { type: 'string', example: 'To Do' } } },
+              },
+            },
+          },
+          responses: { '201': { description: 'Колонка создана' } },
+        },
+      },
+      // ================= CARDS =================
+      '/api/cards': {
+        post: {
+          summary: 'Создать задачу (карточку)',
+          tags: ['Cards'],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    title: { type: 'string', example: 'Сделать лабу' },
+                    columnId: { type: 'string', example: 'uuid-колонки' },
+                    deadline: { type: 'string', format: 'date-time' },
+                    labels: { type: 'string', example: 'Учеба' },
+                  },
+                },
+              },
+            },
+          },
+          responses: { '201': { description: 'Задача создана' } },
         },
       },
     },
