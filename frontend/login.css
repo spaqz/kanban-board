@@ -136,6 +136,7 @@
     width: 18px;
     height: 18px;
 }
+
 /* Стили для переключения между входом и регистрацией */
 .auth-switch {
     margin-top: 20px;
@@ -157,4 +158,32 @@
 .switch-link:hover {
     opacity: 0.7;
     text-decoration: underline;
+}
+
+/* =========================================
+   СТИЛИ ДЛЯ ГЛАЗКА (ПОКАЗ ПАРОЛЯ)
+   ========================================= */
+.password-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    padding-right: 40px; /* Место под иконку */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 18px;
+    color: #888;
+    user-select: none;
+    transition: opacity 0.2s;
+}
+
+.toggle-password:hover {
+    opacity: 0.7;
 }

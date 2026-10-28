@@ -3,9 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Текущие процессы | Канбано</title>
+    <title>Команды | Канбано</title>
     <link rel="stylesheet" href="body.css">
+    <link rel="stylesheet" href="board.css">
     <link rel="stylesheet" href="processing.css">
+    <style>
+        /* Стили для кнопки удаления участника */
+        .btn-del-member {
+            background: transparent;
+            border: none;
+            color: #b3b9c4;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            margin-left: auto;
+            transition: color 0.2s;
+        }
+        .btn-del-member:hover { color: #d93025; }
+        
+        /* Кнопка удаления команды */
+        .btn-delete-team {
+            background: #ffe5e5;
+            color: #d93025;
+            border: 1px solid #d93025;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-delete-team:hover { background: #ffcccc; }
+
+        /* Стили для отображения создателя */
+        .team-owner-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: #f4f5f7;
+            border-radius: 8px;
+            width: fit-content;
+            font-size: 14px;
+            color: #42526e;
+        }
+        .team-owner-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #0052cc;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            overflow: hidden;
+        }
+        .team-owner-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Делаем крестик удаления задачи всегда видимым в командах */
+        .team-tasks-card .task-del {
+            opacity: 1 !important; 
+            color: #b3b9c4;
+        }
+        .team-tasks-card .task-del:hover { color: #d93025; }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -13,26 +81,81 @@
             <div class="sidebar-logo">🐗</div>
             <nav class="sidebar-nav">
                 <a href="board.html" class="nav-item" title="Доска задач">📋</a>
-                <a href="processing.html" class="nav-item active" title="Процессы">👥</a>
+                <a href="processing.html" class="nav-item active" title="Команда">👥</a>
                 <a href="profile.html" class="nav-item" title="Профиль">⚙️</a>
             </nav>
         </aside>
 
         <main class="main-content">
             <header class="top-header">
-                <h1>Текущие процессы</h1>
+                <h1>Управление командами</h1>
             </header>
             <section class="content-body">
                 
-                <div class="process-wrapper">
-                    <div class="process-header">
-                        <h2>Все активные задачи</h2>
-                        <span class="process-total" id="totalTasks">0</span>
+                <div class="team-wrapper">
+                    <div class="team-header-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 id="currentTeamName">Загрузка...</h2>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button id="deleteTeamBtn" class="btn-delete-team">Удалить команду</button>
+                                <button id="createTeamBtn" class="btn-secondary">+ Создать команду</button>
+                            </div>
+                        </div>
+                        <p class="team-desc">Выберите команду из списка ниже или создайте новую.</p>
+                        
+                        <!-- 👇 БЛОК ОТОБРАЖЕНИЯ СОЗДАТЕЛЯ -->
+                        <div id="teamOwnerBlock" class="team-owner-block" style="display: none;">
+                            <span>Создатель:</span>
+                            <div id="teamOwnerAvatar" class="team-owner-avatar"></div>
+                            <span id="teamOwnerName" style="font-weight: 600; color: #172b4d;"></span>
+                        </div>
+
+                        <select id="teamSelect" class="team-select" style="margin-top: 16px;"></select>
                     </div>
-                    
-                    <div class="process-list" id="processList">
-                        <p class="loading-text">Загрузка задач...</p>
+
+                    <div class="team-grid">
+                        <div class="team-search-card">
+                            <h2>Найти коллегу</h2>
+                            <p>Введите имя или email пользователя.</p>
+                            <div class="search-row">
+                                <input type="text" id="searchName" placeholder="Имя или Email">
+                                <button id="searchBtn" class="btn-primary">Найти</button>
+                            </div>
+                            <div id="searchResult" class="search-result"></div>
+                        </div>
+
+                        <div class="team-list-card">
+                            <h2>Участники <span id="teamCount" class="badge">0</span></h2>
+                            <div id="teamList" class="team-list">
+                                <p class="loading-text">Загрузка...</p>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="team-tasks-card">
+                        <h2>Задачи команды</h2>
+                        <p class="team-desc">Эти задачи видны всем участникам команды.</p>
+                        
+                        <div class="add-task-form">
+                            <input type="text" id="newTeamTaskTitle" placeholder="Что нужно сделать?">
+                            <input type="datetime-local" id="newTeamTaskDeadline">
+                            <select id="newTeamTaskCategory">
+                                <option value="Финансы">Финансы</option>
+                                <option value="Личные дела">Личные дела</option>
+                                <option value="Карьера">Карьера</option>
+                                <option value="Дом">Дом</option>
+                                <option value="Покупки">Покупки</option>
+                                <option value="Другое">Другое</option>
+                            </select>
+                            <button id="addTeamTaskBtn" class="btn-primary">Добавить</button>
+                        </div>
+
+                        <div id="teamTasksList" class="task-list" style="margin-top: 20px;">
+                            <p class="loading-text">Загрузка задач...</p>
+                        </div>
+                    </div>
+
                 </div>
 
             </section>
@@ -41,61 +164,345 @@
 
     <script src="api.js"></script>
     <script>
-        (async function loadProcesses() {
-            const listContainer = document.getElementById('processList');
-            const totalElement = document.getElementById('totalTasks');
+        let currentProjectId = null;
+        let currentBoardId = null;
+        let allProjects = [];
 
+        let completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || [];
+
+        // Функция для отображения информации о создателе
+        function updateTeamOwnerUI(project) {
+            const ownerBlock = document.getElementById('teamOwnerBlock');
+            const ownerAvatar = document.getElementById('teamOwnerAvatar');
+            const ownerName = document.getElementById('teamOwnerName');
+
+            if (!project || !project.owner) {
+                ownerBlock.style.display = 'none';
+                return;
+            }
+
+            ownerBlock.style.display = 'flex';
+            ownerName.textContent = project.owner.name;
+
+            if (project.owner.avatar) {
+                ownerAvatar.innerHTML = `<img src="${project.owner.avatar}" alt="avatar">`;
+            } else {
+                ownerAvatar.textContent = project.owner.name[0].toUpperCase();
+            }
+        }
+
+        // 1. Загрузка списка команд
+        async function loadProjects() {
             try {
-                // Если ее бэкенд на другом порту, поменяй путь в api.js, тут оставляем как есть
-                const boardData = await api.request('/board');
+                let projects = await api.request('/projects');
+                allProjects = projects.filter(p => p.name !== 'Личные дела');
                 
-                let allTasks = [];
-                boardData.forEach(col => {
-                    col.tasks.forEach(task => {
-                        allTasks.push({ ...task, columnName: col.title });
-                    });
-                });
-
-                totalElement.textContent = allTasks.length;
-
-                if (allTasks.length === 0) {
-                    listContainer.innerHTML = '<p class="empty-msg">Пока нет активных задач. Создайте их на доске!</p>';
+                const select = document.getElementById('teamSelect');
+                select.innerHTML = '';
+                
+                if (allProjects.length === 0) {
+                    document.getElementById('currentTeamName').textContent = "Нет команд";
+                    document.getElementById('teamList').innerHTML = '<p class="empty-msg">Создайте первую команду!</p>';
+                    document.getElementById('teamTasksList').innerHTML = '<p class="empty-msg">Создайте команду, чтобы добавлять задачи.</p>';
+                    document.getElementById('deleteTeamBtn').style.display = 'none'; 
+                    document.getElementById('teamOwnerBlock').style.display = 'none';
                     return;
                 }
 
-                listContainer.innerHTML = '';
-                allTasks.forEach(task => {
+                document.getElementById('deleteTeamBtn').style.display = 'block';
+
+                allProjects.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.name;
+                    select.appendChild(opt);
+                });
+
+                select.value = allProjects[0].id;
+                currentProjectId = allProjects[0].id;
+                document.getElementById('currentTeamName').textContent = allProjects[0].name;
+                
+                // Обновляем блок создателя
+                updateTeamOwnerUI(allProjects[0]);
+                
+                loadTeamMembers();
+                loadTeamTasks();
+            } catch (err) {
+                console.error("Ошибка загрузки проектов:", err);
+            }
+        }
+
+        // 2. Загрузка участников
+        async function loadTeamMembers() {
+            const list = document.getElementById('teamList');
+            const count = document.getElementById('teamCount');
+            list.innerHTML = '<p class="loading-text">Загрузка...</p>';
+
+            try {
+                const members = await api.request(`/projects/${currentProjectId}/members`);
+                count.textContent = members.length;
+                list.innerHTML = '';
+
+                if (members.length === 0) {
+                    list.innerHTML = '<p class="empty-msg">В команде пока никого нет.</p>';
+                    return;
+                }
+
+                members.forEach(m => {
                     const card = document.createElement('div');
-                    card.className = `process-card ${task.completed ? 'completed' : ''}`;
+                    card.className = 'member-card';
                     
-                    let dateHtml = '';
-                    if (task.date) {
-                        const d = new Date(task.date);
-                        if (!isNaN(d.getTime())) {
-                            const months = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
-                            dateHtml = `<span class="process-date">📅 ${d.getDate()} ${months[d.getMonth()]}</span>`;
-                        }
-                    }
+                    let avatarHtml = m.user.avatar 
+                        ? `<img src="${m.user.avatar}" style="width:100%; height:100%; object-fit:cover;">` 
+                        : m.user.name[0].toUpperCase();
+
+                    // 👇 ВОТ ЗДЕСЬ МЫ ОПРЕДЕЛЯЕМ РОЛЬ И СКРЫВАЕМ КРЕСТИК
+                    const roleText = m.role === 'OWNER' ? 'Создатель' : 'Участник';
+                    const deleteBtnHtml = m.role !== 'OWNER' 
+                        ? `<button class="btn-del-member" title="Удалить участника" onclick="deleteMember('${m.user.id}')">✕</button>` 
+                        : '';
 
                     card.innerHTML = `
-                        <div class="process-info">
-                            <span class="process-status">${task.completed ? '✓' : '○'}</span>
-                            <span class="process-text">${task.text || task.title}</span>
+                        <div class="member-avatar" style="overflow: hidden;">${avatarHtml}</div>
+                        <div class="member-info">
+                            <div class="member-name">${m.user.name}</div>
+                            <div class="member-email">${m.user.email}</div>
                         </div>
-                        <div class="process-meta">
-                            ${dateHtml}
-                            ${task.tag ? `<span class="task-tag ${task.tagClass}">${task.tag}</span>` : ''}
-                            <span class="process-col">${task.columnName}</span>
-                        </div>
+                        <div class="member-role" style="margin-left: auto; margin-right: 10px;">${roleText}</div>
+                        ${deleteBtnHtml}
                     `;
-                    listContainer.appendChild(card);
+                    list.appendChild(card);
+                });
+            } catch (err) {
+                list.innerHTML = `<p class="error-msg">Ошибка: ${err.message}</p>`;
+            }
+        }
+
+        // Функция удаления участника
+        async function deleteMember(userId) {
+            if (!confirm('Вы уверены, что хотите удалить этого участника из команды?')) return;
+            try {
+                await api.request(`/projects/${currentProjectId}/members/${userId}`, { method: 'DELETE' });
+                loadTeamMembers(); 
+            } catch (err) {
+                alert('Ошибка удаления участника: ' + err.message);
+            }
+        }
+
+        // 3. Загрузка задач
+        async function loadTeamTasks() {
+            const list = document.getElementById('teamTasksList');
+            list.innerHTML = '<p class="loading-text">Загрузка задач...</p>';
+
+            try {
+                let boards = await api.request(`/projects/${currentProjectId}/boards`);
+                
+                if (boards.length === 0) {
+                    const newBoard = await api.request(`/projects/${currentProjectId}/boards`, { 
+                        method: 'POST', body: { name: 'Доска команды' }
+                    });
+                    boards = [newBoard];
+                }
+
+                currentBoardId = boards[0].id;
+                let boardDetails = await api.request(`/boards/${currentBoardId}`);
+                
+                if (!boardDetails.columns || boardDetails.columns.length === 0) {
+                    await api.request(`/boards/${currentBoardId}/columns`, { 
+                        method: 'POST', body: { name: 'Входящие', order: 0 } 
+                    });
+                    boardDetails = await api.request(`/boards/${currentBoardId}`);
+                }
+                
+                let allCards = [];
+                boardDetails.columns.forEach(col => {
+                    if (col.cards) {
+                        col.cards.forEach(c => allCards.push({...c, columnName: col.name}));
+                    }
+                });
+
+                list.innerHTML = '';
+                if (allCards.length === 0) {
+                    list.innerHTML = '<p class="empty-msg">Задач пока нет.</p>';
+                    return;
+                }
+
+                allCards.forEach(task => {
+                    const t = document.createElement('div');
+                    const isCompleted = completedTasks.includes(task.id);
+                    t.className = `task ${isCompleted ? 'completed' : ''}`;
+                    
+                    let tagHtml = '';
+                    if (task.labels) {
+                        const tagClasses = {
+                            'Финансы': 'tag-finance', 'Личные дела': 'tag-personal', 'Карьера': 'tag-career',
+                            'Дом': 'tag-home', 'Покупки': 'tag-shopping', 'Другое': 'tag-other'
+                        };
+                        const cls = tagClasses[task.labels] || 'tag-other';
+                        tagHtml = `<span class="task-tag ${cls}">${task.labels}</span>`;
+                    }
+
+                    let dateHtml = '';
+                    if (task.deadline) {
+                        const dateStr = task.deadline.split('T')[0];
+                        dateHtml = `<div class="task-date">📅 ${dateStr}</div>`;
+                    }
+
+                    t.innerHTML = `
+                        <div class="task-header-row">
+                            <span class="task-check">${isCompleted ? '✓' : '○'}</span>
+                            <div class="task-text">${task.title}</div>
+                            <button class="task-del" title="Удалить">✕</button>
+                        </div>
+                        ${dateHtml}
+                        ${tagHtml}
+                    `;
+
+                    t.querySelector('.task-check').addEventListener('click', () => {
+                        if (completedTasks.includes(task.id)) {
+                            completedTasks = completedTasks.filter(id => id !== task.id);
+                        } else {
+                            completedTasks.push(task.id);
+                        }
+                        localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+                        loadTeamTasks();
+                    });
+
+                    t.querySelector('.task-del').addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        if(confirm('Удалить задачу?')) {
+                            try {
+                                await api.request(`/cards/${task.id}`, { method: 'DELETE' });
+                                completedTasks = completedTasks.filter(id => id !== task.id);
+                                localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+                                loadTeamTasks();
+                            } catch(err) { alert('Ошибка удаления: ' + err.message); }
+                        }
+                    });
+
+                    list.appendChild(t);
                 });
 
             } catch (err) {
-                listContainer.innerHTML = `<p class="error-msg">Ошибка: ${err.message}</p>`;
-                totalElement.textContent = '0';
+                list.innerHTML = `<p class="error-msg">Ошибка загрузки задач: ${err.message}</p>`;
             }
-        })();
+        }
+
+        // 4. Добавление новой задачи
+        document.getElementById('addTeamTaskBtn').addEventListener('click', async () => {
+            const title = document.getElementById('newTeamTaskTitle').value.trim();
+            const deadline = document.getElementById('newTeamTaskDeadline').value;
+            const labels = document.getElementById('newTeamTaskCategory').value;
+            
+            if (!title) return alert('Введите текст задачи');
+            if (!currentBoardId) return alert('Сначала создайте доску!');
+
+            try {
+                const boardDetails = await api.request(`/boards/${currentBoardId}`);
+                if (!boardDetails.columns || boardDetails.columns.length === 0) {
+                    return alert('На доске нет колонок.');
+                }
+                
+                const firstColumnId = boardDetails.columns[0].id;
+
+                await api.request('/cards', {
+                    method: 'POST',
+                    body: { title, columnId: firstColumnId, labels, deadline: deadline || null }
+                });
+
+                document.getElementById('newTeamTaskTitle').value = '';
+                document.getElementById('newTeamTaskDeadline').value = '';
+                loadTeamTasks();
+            } catch (err) {
+                alert('Ошибка добавления: ' + err.message);
+            }
+        });
+
+        // 5. Поиск пользователя
+        document.getElementById('searchBtn').addEventListener('click', async () => {
+            const query = document.getElementById('searchName').value.trim();
+            const resultBox = document.getElementById('searchResult');
+            if (!query) return;
+
+            resultBox.innerHTML = '<p>Поиск...</p>';
+            try {
+                const users = await api.request(`/users/search?query=${encodeURIComponent(query)}`);
+                
+                if (users.length === 0) {
+                    resultBox.innerHTML = '<p class="error-msg">Не найдены.</p>';
+                    return;
+                }
+
+                resultBox.innerHTML = '';
+                users.forEach(user => {
+                    const div = document.createElement('div');
+                    div.className = 'member-card';
+                    div.style.marginTop = '10px';
+                    
+                    let avatarHtml = user.avatar 
+                        ? `<img src="${user.avatar}" style="width:100%; height:100%; object-fit:cover;">` 
+                        : user.name[0].toUpperCase();
+
+                    div.innerHTML = `
+                        <div class="member-avatar" style="overflow: hidden;">${avatarHtml}</div>
+                        <div class="member-info">
+                            <div class="member-name">${user.name}</div>
+                            <div class="member-email">${user.email}</div>
+                        </div>
+                        <button class="btn-add-member" onclick="addMember('${user.id}')">Добавить</button>
+                    `;
+                    resultBox.appendChild(div);
+                });
+            } catch (err) {
+                resultBox.innerHTML = `<p class="error-msg">Ошибка: ${err.message}</p>`;
+            }
+        });
+
+        async function addMember(userId) {
+            try {
+                await api.request(`/projects/${currentProjectId}/members`, {
+                    method: 'POST', body: { userId: userId }
+                });
+                alert('Пользователь добавлен!');
+                document.getElementById('searchResult').innerHTML = ''; 
+                document.getElementById('searchName').value = '';
+                loadTeamMembers();
+            } catch (err) { alert('Ошибка: ' + err.message); }
+        }
+
+        // Смена команды
+        document.getElementById('teamSelect').addEventListener('change', (e) => {
+            currentProjectId = e.target.value;
+            const selectedProject = allProjects.find(p => p.id === currentProjectId);
+            
+            document.getElementById('currentTeamName').textContent = selectedProject.name;
+            updateTeamOwnerUI(selectedProject);
+            
+            loadTeamMembers();
+            loadTeamTasks();
+        });
+
+        // Создание команды
+        document.getElementById('createTeamBtn').addEventListener('click', async () => {
+            const name = prompt('Название новой команды:');
+            if (!name) return;
+            try {
+                await api.request('/projects', { method: 'POST', body: { name: name } });
+                loadProjects();
+            } catch (err) { alert('Ошибка: ' + err.message); }
+        });
+
+        // Удаление команды
+        document.getElementById('deleteTeamBtn').addEventListener('click', async () => {
+            if (!confirm('Вы уверены, что хотите удалить ВСЮ команду со всеми задачами? Это действие необратимо.')) return;
+            try {
+                await api.request(`/projects/${currentProjectId}`, { method: 'DELETE' });
+                loadProjects(); 
+            } catch (err) { alert('Ошибка удаления команды: ' + err.message); }
+        });
+
+        // Запуск
+        loadProjects();
     </script>
 </body>
 </html>

@@ -10,14 +10,14 @@ export const projectService = {
         ],
       },
       include: {
-        owner: { select: { id: true, name: true, email: true } },
+        // 👇 ДОБАВИЛИ avatar: true ВОТ СЮДА
+        owner: { select: { id: true, name: true, email: true, avatar: true } }, 
         _count: { select: { boards: true, members: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
   },
-
-  async create(userId: string, data: { name: string; description?: string }) {
+   async create(userId: string, data: { name: string; description?: string }) {
     if (!data.name?.trim()) {
       throw Object.assign(new Error('Название обязательно'), { status: 400 });
     }
@@ -97,3 +97,6 @@ export const projectService = {
     await prisma.project.delete({ where: { id: projectId } });
   },
 };
+
+
+  

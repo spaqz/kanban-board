@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя | Канбано</title>
+    <link rel="stylesheet" href="body.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Черная боковая панель слева -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">🐗</div>
+            <nav class="sidebar-nav">
+                <a href="board.html" class="nav-item" title="Доска задач">📋</a>
+                <a href="processing.html" class="nav-item" title="Процессы">👥</a>
+                <a href="profile.html" class="nav-item" title="Мой профиль">⚙️</a>
+            </nav>
+        </aside>
+
+        <!-- Основная область -->
+        <main class="main-content">
+            <header class="top-header">
+                <h1>Профиль сотрудника</h1>
+            </header>
+
+            <section class="content-body">
+                <div class="profile-wrapper" id="profileContainer" style="display: none;">
+                    <!-- Карточка пользователя -->
+                    <div class="profile-card">
+                        <div class="avatar-container" style="cursor: default;">
+                            <div class="avatar-placeholder" id="avatarPlaceholder">?</div>
+                            <img src="" alt="Аватар" class="user-avatar" id="avatarPreview" style="display:none;">
+                        </div>
+
+                        <div class="profile-info-section">
+                            <h2 class="profile-name" id="profileNameDisplay">Загрузка...</h2>
+                            <p class="profile-role" id="profileRoleDisplay">Загрузка...</p>
+                            <span class="profile-badge">Сотрудник</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Сообщение об ошибке (если пользователь не найден) -->
+                <div id="errorMessage" style="display: none; text-align: center; color: #d93025; margin-top: 50px;">
+                    <h2>Пользователь не найден 😢</h2>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        // Получаем ID пользователя из адресной строки (например, user-profile.html?id=123-456)
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id');
+
+        function getInitials(name) {
+            if (!name || !name.trim()) return '?';
+            return name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        }
+
+        (async function loadUserProfile() {
+            if (!userId) {
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+
+            try {
+                // ВАЖНО: Проверь в Swagger, как называется путь (например, /users/ или /auth/users/)
+                const user = await api.request(`/users/${userId}`); 
+                
+                // Показываем контейнер
+                document.getElementById('profileContainer').style.display = 'block';
+
+                // Заполняем данные
+                document.getElementById('profileNameDisplay').textContent = user.name || 'Без имени';
+                document.getElementById('profileRoleDisplay').textContent = user.role || 'Должность не указана';
+
+                // Ставим аватарку или инициалы
+                if (user.avatar) {
+                    document.getElementById('avatarPreview').src = user.avatar;
+                    document.getElementById('avatarPreview').style.display = 'block';
+                    document.getElementById('avatarPlaceholder').style.display = 'none';
+                } else {
+                    document.getElementById('avatarPlaceholder').textContent = getInitials(user.name);
+                }
+
+            } catch (err) {
+                console.error("Ошибка загрузки профиля:", err.message);
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,169 +1,152 @@
 // ============================================================
-//  ЛОГИКА РАБОЧЕЙ КАНБАН-ДОСКИ
+//  ЛОГИКА ДОСКИ (ФИНАЛЬНАЯ ВЕРСИЯ)
 // ============================================================
 
-// Загружаем данные из памяти браузера (если они есть)
-let boardData = [];
+let boardData = []; 
+let currentBoardId = null; 
+const board = document.getElementById('board');
 
-// Доступные категории (классы цветов берутся из твоего body.css)
-const TAGS = [
-    { name: 'Финансы',      cls: 'tag-finance'  },
-    { name: 'Личные дела',  cls: 'tag-personal' },
-    { name: 'Карьера',      cls: 'tag-career'   },
-    { name: 'Дом',          cls: 'tag-home'     },
-    { name: 'Покупки',      cls: 'tag-shopping' },
-    { name: 'Другое',       cls: 'tag-other'    }
+// Доступные категории
+const CATEGORIES = [
+    { name: 'Финансы', cls: 'tag-finance' },
+    { name: 'Личные дела', cls: 'tag-personal' },
+    { name: 'Карьера', cls: 'tag-career' },
+    { name: 'Дом', cls: 'tag-home' },
+    { name: 'Покупки', cls: 'tag-shopping' },
+    { name: 'Другое', cls: 'tag-other' }
 ];
 
-const board = document.getElementById('board');
-let uid = Date.now();
-const newId = () => 'id' + (uid++);
+// Состояние "выполнено" храним локально, так как в схеме БД этого нет
+let completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || [];
 
-// Функция сохранения
-let saveTimer = null;
-function saveData() {
-    // Небольшая задержка, чтобы не слать запрос на каждую набранную букву
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-        api.request('/board', { method: 'PUT', body: boardData })
-            .catch(err => console.error('Не удалось сохранить доску:', err.message));
-    }, 400);
-}
-
-// Форматирование даты
-function formatDateTime(val) {
-    if (!val) return '';
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return val;
-    const months = ['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
-    const day = d.getDate();
-    const month = months[d.getMonth()];
-    const hh = String(d.getHours()).padStart(2, '0');
-    const mm = String(d.getMinutes()).padStart(2, '0');
-    if (hh === '00' && mm === '00') return `${day} ${month}`;
-    return `${day} ${month}, ${hh}:${mm}`;
-}
-
-// Главная функция отрисовки
+// ============================================================
+// ОТРИСОВКА ДОСКИ
+// ============================================================
 function renderBoard() {
     board.innerHTML = '';
 
-    // Если доска пустая — показываем большую кнопку
+    // Если колонок нет — показываем кнопку создания
     if (boardData.length === 0) {
         const emptyState = document.createElement('div');
         emptyState.className = 'empty-board-state';
-        
         const btn = document.createElement('button');
         btn.className = 'btn-create-first-col';
         btn.innerHTML = '<span>+</span> Добавить список дел';
         btn.addEventListener('click', createNewColumn);
-        
         emptyState.appendChild(btn);
         board.appendChild(emptyState);
         return;
     }
 
-    // Если есть колонки — рисуем их
+    // Отрисовываем колонки
     boardData.forEach(col => {
         const colEl = document.createElement('div');
         colEl.className = 'column';
 
-        // 1. Шапка колонки (Название, счетчик, меню)
+        // --- ШАПКА КОЛОНКИ ---
         const header = document.createElement('div');
         header.className = 'column-header';
-
+        
+        // 1. Название (редактируемое)
         const titleInput = document.createElement('input');
         titleInput.className = 'column-title';
-        titleInput.value = col.title;
-        titleInput.addEventListener('input', e => {
-            col.title = e.target.value;
-            saveData();
-        });
-
-        const count = document.createElement('span');
-        count.className = 'column-count';
-        count.textContent = col.tasks.length;
-
-        const menuWrap = document.createElement('div');
-        menuWrap.className = 'menu-wrap';
-        const menuBtn = document.createElement('button');
-        menuBtn.className = 'menu-btn';
-        menuBtn.textContent = '⋮';
-        
-        const dropdown = document.createElement('div');
-        dropdown.className = 'menu-dropdown';
-        const delColBtn = document.createElement('button');
-        delColBtn.className = 'danger';
-        delColBtn.textContent = '🗑 Удалить колонку';
-        delColBtn.addEventListener('click', () => {
-            if (confirm(`Удалить колонку «${col.title}»?`)) {
-                boardData = boardData.filter(c => c.id !== col.id);
-                saveData();
-                renderBoard();
+        titleInput.value = col.name;
+        titleInput.addEventListener('change', async (e) => {
+            const newName = e.target.value.trim();
+            if (!newName) { e.target.value = col.name; return; }
+            try {
+                await api.request(`/columns/${col.id}`, { method: 'PATCH', body: { name: newName } });
+                col.name = newName;
+            } catch (err) {
+                alert('Не удалось сохранить название: ' + err.message);
+                e.target.value = col.name;
             }
         });
 
-        dropdown.appendChild(delColBtn);
-        menuBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            document.querySelectorAll('.menu-dropdown').forEach(d => d.classList.remove('open'));
-            dropdown.classList.toggle('open');
-        });
+        // 2. Счетчик задач
+        const count = document.createElement('span');
+        count.className = 'column-count';
+        count.textContent = col.cards.length;
+
+        // 3. КНОПКА УДАЛЕНИЯ КОЛОНКИ (Всегда видимая)
+        const delColBtn = document.createElement('button');
+        delColBtn.innerHTML = '✕'; 
+        delColBtn.title = 'Удалить колонку';
+        delColBtn.style.background = 'transparent';
+        delColBtn.style.border = 'none';
+        delColBtn.style.color = '#b3b9c4';
+        delColBtn.style.cursor = 'pointer';
+        delColBtn.style.fontSize = '16px';
+        delColBtn.style.padding = '4px';
+        delColBtn.style.marginLeft = '8px';
+        delColBtn.style.transition = 'color 0.2s';
         
-        menuWrap.appendChild(menuBtn);
-        menuWrap.appendChild(dropdown);
+        delColBtn.addEventListener('mouseover', () => delColBtn.style.color = '#d93025');
+        delColBtn.addEventListener('mouseout', () => delColBtn.style.color = '#b3b9c4');
+        delColBtn.addEventListener('click', () => deleteColumn(col.id));
+
         header.appendChild(titleInput);
         header.appendChild(count);
-        header.appendChild(menuWrap);
+        header.appendChild(delColBtn);
         colEl.appendChild(header);
 
-        // 2. Список задач
+        // --- СПИСОК ЗАДАЧ ---
         const list = document.createElement('div');
         list.className = 'task-list';
 
-        col.tasks.forEach(task => {
+        col.cards.forEach(task => {
             const t = document.createElement('div');
-            t.className = `task ${task.completed ? 'completed' : ''}`;
+            const isCompleted = completedTasks.includes(task.id);
+            t.className = `task ${isCompleted ? 'completed' : ''}`;
             
-            // Формируем HTML карточки
+            // Тег категории
+            let tagHtml = '';
+            if (task.labels) {
+                const cat = CATEGORIES.find(c => c.name === task.labels) || CATEGORIES[5];
+                tagHtml = `<span class="task-tag ${cat.cls}">${task.labels}</span>`;
+            }
+
+            // Разметка карточки
             let html = `
                 <div class="task-header-row">
-                    <span class="task-check" title="Отметить выполнение">${task.completed ? '✓' : '○'}</span>
-                    <div class="task-text">${escapeHtml(task.text)}</div>
-                    <button class="task-del" title="Удалить">✕</button>
+                    <span class="task-check">${isCompleted ? '✓' : '○'}</span>
+                    <div class="task-text">${task.title}</div>
+                    <button class="task-del">✕</button>
                 </div>
             `;
             
-            // Если есть тег или дата, добавляем нижнюю часть
-            if (task.tag || task.date) {
-                html += `<div class="task-footer">`;
-                if (task.tag) {
-                    html += `<span class="task-tag ${task.tagClass}">${task.tag}</span>`;
-                } else {
-                    html += `<span></span>`;
-                }
-                if (task.date) {
-                    html += `<div class="task-date">${formatDateTime(task.date)}</div>`;
-                }
-                html += `</div>`;
+            if (task.deadline) {
+                const dateStr = task.deadline.split('T')[0];
+                html += `<div class="task-date">📅 ${dateStr}</div>`;
             }
+            html += tagHtml;
 
             t.innerHTML = html;
 
-            // Клик по кружочку (зачеркнуть)
-            t.querySelector('.task-check').addEventListener('click', (e) => {
-                e.stopPropagation();
-                task.completed = !task.completed;
-                saveData();
+            // Клик по кружочку (выполнено)
+            t.querySelector('.task-check').addEventListener('click', () => {
+                if (completedTasks.includes(task.id)) {
+                    completedTasks = completedTasks.filter(id => id !== task.id);
+                } else {
+                    completedTasks.push(task.id);
+                }
+                localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
                 renderBoard();
             });
 
-            // Клик по крестику (удалить)
-            t.querySelector('.task-del').addEventListener('click', (e) => {
+            // Клик по крестику (удалить задачу)
+            t.querySelector('.task-del').addEventListener('click', async (e) => {
                 e.stopPropagation();
-                col.tasks = col.tasks.filter(x => x.id !== task.id);
-                saveData();
-                renderBoard();
+                if(confirm('Удалить задачу?')) {
+                    try {
+                        await api.request(`/cards/${task.id}`, { method: 'DELETE' });
+                        col.cards = col.cards.filter(x => x.id !== task.id);
+                        // Убираем из памяти выполенных
+                        completedTasks = completedTasks.filter(id => id !== task.id);
+                        localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+                        renderBoard();
+                    } catch(err) { alert('Ошибка удаления: ' + err.message); }
+                }
             });
 
             list.appendChild(t);
@@ -171,27 +154,25 @@ function renderBoard() {
 
         colEl.appendChild(list);
 
-        // 3. Форма добавления задачи (скрыта по умолчанию)
+        // Форма добавления задачи
         const form = buildAddForm(col);
         colEl.appendChild(form);
 
-        // 4. Кнопка открытия формы
+        // Кнопка "Добавить задачу"
         const addTaskBtn = document.createElement('button');
         addTaskBtn.className = 'add-task-btn';
         addTaskBtn.textContent = '+ Добавить задачу';
         addTaskBtn.addEventListener('click', () => {
             document.querySelectorAll('.add-form.open').forEach(f => { if (f !== form) f.classList.remove('open'); });
             form.classList.toggle('open');
-            if (form.classList.contains('open')) {
-                form.querySelector('input').focus();
-            }
+            if (form.classList.contains('open')) form.querySelector('input').focus();
         });
         
         colEl.appendChild(addTaskBtn);
         board.appendChild(colEl);
     });
 
-    // 5. Кнопка добавления новой колонки (в конце)
+    // Кнопка "Добавить колонку" в конце
     const addCol = document.createElement('button');
     addCol.className = 'add-column-btn';
     addCol.textContent = '+ Добавить колонку';
@@ -199,24 +180,43 @@ function renderBoard() {
     board.appendChild(addCol);
 }
 
-// Функция создания колонки
-function createNewColumn() {
-    const name = prompt('Введите название списка (например: Входящие, В работе):', 'Новый список');
-    if (name === null) return;
-    
-    boardData.push({ 
-        id: newId(), 
-        title: name.trim() || 'Без названия', 
-        tasks: [] 
-    });
-    saveData();
-    renderBoard();
+// ============================================================
+// ДЕЙСТВИЯ С КОЛОНКАМИ
+// ============================================================
+async function createNewColumn() {
+    const name = prompt('Название списка:', 'Новая колонка');
+    if (!name || !currentBoardId) return;
+
+    try {
+        const newCol = await api.request(`/boards/${currentBoardId}/columns`, { 
+            method: 'POST', 
+            body: { name: name, order: boardData.length } 
+        });
+        
+        boardData.push({ id: newCol.id, name: newCol.name, cards: [] });
+        renderBoard();
+    } catch (err) {
+        alert('Ошибка при создании колонки: ' + err.message);
+    }
 }
 
-// Функция создания формы добавления задачи
+async function deleteColumn(colId) {
+    if (!confirm('Вы уверены, что хотите удалить колонку со всеми задачами?')) return;
+    try {
+        await api.request(`/columns/${colId}`, { method: 'DELETE' });
+        boardData = boardData.filter(c => c.id !== colId);
+        renderBoard();
+    } catch (err) {
+        alert('Ошибка при удалении колонки (возможно, нет такого роута): ' + err.message);
+    }
+}
+
+// ============================================================
+// ДОБАВЛЕНИЕ ЗАДАЧИ
+// ============================================================
 function buildAddForm(col) {
     const form = document.createElement('div');
-    form.className = 'add-form'; // display: none из body.css
+    form.className = 'add-form';
     
     const textInput = document.createElement('input');
     textInput.type = 'text';
@@ -224,88 +224,104 @@ function buildAddForm(col) {
     
     const dateInput = document.createElement('input');
     dateInput.type = 'datetime-local';
-    
-    const tagSelect = document.createElement('select');
-    TAGS.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t.name; 
-        opt.textContent = t.name;
-        tagSelect.appendChild(opt);
-    });
 
+    const categorySelect = document.createElement('select');
+    CATEGORIES.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat.name;
+        opt.textContent = cat.name;
+        categorySelect.appendChild(opt);
+    });
+    
     const row = document.createElement('div');
     row.className = 'form-row';
     
     const saveBtn = document.createElement('button');
-    saveBtn.className = 'btn-save'; 
-    saveBtn.textContent = 'Добавить';
-    
+    saveBtn.className = 'btn-save'; saveBtn.textContent = 'Добавить';
     const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn-cancel'; 
-    cancelBtn.textContent = 'Отмена';
+    cancelBtn.className = 'btn-cancel'; cancelBtn.textContent = 'Отмена';
     
-    row.appendChild(saveBtn); 
-    row.appendChild(cancelBtn);
-    form.appendChild(textInput); 
-    form.appendChild(dateInput); 
-    form.appendChild(tagSelect); 
-    form.appendChild(row);
+    row.appendChild(saveBtn); row.appendChild(cancelBtn);
+    form.appendChild(textInput); form.appendChild(dateInput); form.appendChild(categorySelect); form.appendChild(row);
 
-    // Сохранение задачи
-    function saveTask() {
+    saveBtn.addEventListener('click', async () => {
         const text = textInput.value.trim();
         if (!text) { textInput.focus(); return; }
         
-        const tagName = tagSelect.value;
-        const tagObj = TAGS.find(t => t.name === tagName) || { cls: 'tag-other' };
-        
-        col.tasks.push({ 
-            id: newId(), 
-            text: text, 
-            date: dateInput.value, 
-            tag: tagName, 
-            tagClass: tagObj.cls,
-            completed: false
-        });
-        
-        saveData();
-        renderBoard();
-    }
-
-    saveBtn.addEventListener('click', saveTask);
-    cancelBtn.addEventListener('click', () => form.classList.remove('open'));
-    textInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') saveTask();
-        if (e.key === 'Escape') form.classList.remove('open');
+        try {
+            const newCard = await api.request('/cards', { 
+                method: 'POST', 
+                body: { 
+                    title: text, 
+                    columnId: col.id, 
+                    deadline: dateInput.value || null,
+                    labels: categorySelect.value, // Отправляем категорию
+                    order: col.cards.length
+                } 
+            });
+            
+            col.cards.push({ 
+                id: newCard.id, 
+                title: newCard.title, 
+                deadline: newCard.deadline, 
+                labels: newCard.labels || categorySelect.value
+            });
+            renderBoard();
+        } catch(err) {
+            alert('Ошибка при создании задачи: ' + err.message);
+        }
     });
 
+    cancelBtn.addEventListener('click', () => form.classList.remove('open'));
     return form;
 }
 
-// Защита от HTML-инъекций
-function escapeHtml(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-}
 
-// Закрытие меню при клике вне его
-document.addEventListener('click', () => {
-    document.querySelectorAll('.menu-dropdown.open').forEach(d => d.classList.remove('open'));
-});
-
-// Старт: загружаем доску с сервера
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ ДОСКИ (ЛИЧНЫЙ ПРОЕКТ)
+// ============================================================
 (async function init() {
     try {
-        boardData = await api.request('/board');
-
-        // Одноразовый перенос старых данных из localStorage
-        const old = JSON.parse(localStorage.getItem('kanbanData') || '[]');
-        if (boardData.length === 0 && old.length > 0) {
-            boardData = old;
-            await api.request('/board', { method: 'PUT', body: boardData });
+        let projects = await api.request('/projects');
+        
+        // Ищем проект для личных задач
+        let personalProject = projects.find(p => p.name === 'Личные дела');
+        
+        // Если его нет — создаем
+        if (!personalProject) {
+            personalProject = await api.request('/projects', { 
+                method: 'POST', 
+                body: { name: 'Личные дела', description: 'Личные задачи пользователя' }
+            });
         }
-        localStorage.removeItem('kanbanData');
+        
+        const projectId = personalProject.id;
+        
+        // Ищем доску внутри этого проекта
+        let boards = await api.request(`/projects/${projectId}/boards`); 
+        
+        // Если доски нет — создаем её
+        if (boards.length === 0) {
+            const newBoard = await api.request(`/projects/${projectId}/boards`, { 
+                method: 'POST', 
+                body: { name: 'Моя доска' }
+            });
+            boards = [newBoard];
+        }
+        
+        currentBoardId = boards[0].id;
+        const boardDetails = await api.request(`/boards/${currentBoardId}`);
+        
+        if (boardDetails.columns && boardDetails.columns.length > 0) {
+            boardData = boardDetails.columns.map(col => ({
+                id: col.id, name: col.name, cards: col.cards || []
+            }));
+        }
+
+        renderBoard();
+
     } catch (err) {
-        console.error(err.message);
+        console.error("Ошибка загрузки доски:", err.message);
+        renderBoard();
     }
-    renderBoard();
 })();

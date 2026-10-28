@@ -17,19 +17,32 @@
         </div>
 
         <form class="auth-form">
+            <!-- 👇 ЗАМЕНИЛИ ЛОГИН НА EMAIL -->
             <div class="form-group">
-                <label for="username">Логин</label>
-                <input type="text" id="username" placeholder="Введите логин" required>
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Введите ваш email" required>
+            </div>
+
+            <!-- 👇 ДОБАВИЛИ ПОЛЕ ИМЕНИ -->
+            <div class="form-group">
+                <label for="name">Ваше имя</label>
+                <input type="text" id="name" placeholder="Как вас зовут?" required>
             </div>
 
             <div class="form-group">
                 <label for="password">Пароль</label>
-                <input type="password" id="password" placeholder="Введите пароль" required>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="Введите пароль" required>
+                    <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+                </div>
             </div>
 
             <div class="form-group">
                 <label for="confirm-password">Подтверждение пароля</label>
-                <input type="password" id="confirm-password" placeholder="Повторите пароль" required>
+                <div class="password-wrapper">
+                    <input type="password" id="confirm-password" placeholder="Повторите пароль" required>
+                    <span class="toggle-password" onclick="togglePassword('confirm-password', this)">👁️</span>
+                </div>
             </div>
 
             <button type="submit" class="btn-submit">Зарегистрироваться</button>
@@ -47,7 +60,6 @@
             Войти через Google
         </a>
 
-        <!-- Явный блок с кнопкой, который точно отобразится -->
         <div style="margin-top: 20px; text-align: center; font-size: 14px; color: #666;">
             У вас уже есть аккаунт? 
             <a href="vhod.html" style="color: #111; font-weight: bold; text-decoration: underline; margin-left: 5px;">Войти</a>
@@ -55,6 +67,19 @@
 
     </div>
 
+    <script>
+        function togglePassword(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconElement.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                iconElement.textContent = '👁️';
+            }
+        }
+    </script>
+    
     <script src="api.js"></script>
     <script src="auth.js"></script>
 </body>

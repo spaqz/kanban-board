@@ -1,5 +1,7 @@
 // Общий клиент для работы с API
 const TOKEN_KEY = 'kanbanToken';
+// 👇 Указываем полный адрес бэкенда Маши
+const API_BASE_URL = 'http://localhost:4000';
 
 const api = {
     getToken: () => localStorage.getItem(TOKEN_KEY),
@@ -17,7 +19,9 @@ const api = {
             if (!token) { api.logout(); throw new Error('Нет токена'); }
             headers['Authorization'] = 'Bearer ' + token;
         }
-        const res = await fetch('/api' + path, {
+        
+        // 👇 Теперь запрос идет на http://localhost:4000/api...
+        const res = await fetch(API_BASE_URL + '/api' + path, {
             method,
             headers,
             body: body !== undefined ? JSON.stringify(body) : undefined

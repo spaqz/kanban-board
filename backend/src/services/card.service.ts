@@ -8,6 +8,7 @@ export const cardService = {
     priority?: string;
     assigneeId?: string;
     deadline?: string;
+    labels?: string; 
   }) {
     if (!data.title?.trim()) {
       throw Object.assign(new Error('Название карточки обязательно'), { status: 400 });
@@ -34,6 +35,7 @@ export const cardService = {
         assigneeId: data.assigneeId,
         columnId: data.columnId,
         order: count,
+        labels: data.labels || "", // 👈 ВОТ ОНА, МАГИЯ! ТЕПЕРЬ СОХРАНЯЕТСЯ В БД
       },
       include: {
         assignee: { select: { id: true, name: true, email: true } },
@@ -73,11 +75,18 @@ export const cardService = {
     });
   },
 
-  async remove(userId: string, cardId: string) {
+    async remove(userId: string, cardId: string) {
     const card = await prisma.card.findFirst({
       where: {
         id: cardId,
-        column: { board: { project: { ownerId: userId } } },
+       
+        column: { 
+          board: { 
+            project: { 
+              OR: [{ ownerId: userId }, { members: { some: { userId } } }] 
+            } 
+          } 
+        },
       },
     });
     if (!card) {

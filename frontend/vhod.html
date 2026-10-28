@@ -17,14 +17,18 @@
         </div>
 
         <form class="auth-form">
+            <!-- 👇 ЗАМЕНИЛИ ЛОГИН НА EMAIL -->
             <div class="form-group">
-                <label for="username">Логин</label>
-                <input type="text" id="username" placeholder="Введите ваш логин" required>
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Введите ваш email" required>
             </div>
 
             <div class="form-group">
                 <label for="password">Пароль</label>
-                <input type="password" id="password" placeholder="Введите ваш пароль" required>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="Введите ваш пароль" required>
+                    <span class="toggle-password" onclick="togglePassword('password', this)">👁️</span>
+                </div>
             </div>
 
             <button type="submit" class="btn-submit">Войти</button>
@@ -42,12 +46,24 @@
             Войти через Google
         </a>
 
-        <!-- Кнопка возврата к регистрации -->
         <div class="auth-switch">
             <span>Еще нет аккаунта?</span>
             <a href="index-login.html" class="switch-link">Зарегистрироваться</a>
         </div>
     </div>
+
+    <script>
+        function togglePassword(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconElement.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                iconElement.textContent = '👁️';
+            }
+        }
+    </script>
 
     <script src="api.js"></script>
     <script src="auth.js"></script>

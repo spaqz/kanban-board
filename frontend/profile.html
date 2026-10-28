@@ -6,20 +6,66 @@
     <title>Профиль | Канбано</title>
     <link rel="stylesheet" href="body.css">
     <link rel="stylesheet" href="profile.css">
+    <style>
+        /* Добавляем стили прямо сюда, чтобы они точно применились */
+        .avatar-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0052cc, #2684ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(0, 82, 204, 0.25);
+        }
+        .user-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 50%;
+        }
+        .avatar-placeholder {
+            color: #fff;
+            font-size: 42px;
+            font-weight: 700;
+        }
+        .avatar-overlay {
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+        .avatar-overlay:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Черная боковая панель слева -->
         <aside class="sidebar">
             <div class="sidebar-logo">🐗</div>
             <nav class="sidebar-nav">
                 <a href="board.html" class="nav-item" title="Доска задач">📋</a>
-                <a href="processing.html" class="nav-item" title="Управление командой / Processing">👥</a>
+                <a href="processing.html" class="nav-item" title="Команда">👥</a>
                 <a href="profile.html" class="nav-item active" title="Профиль">⚙️</a>
             </nav>
         </aside>
 
-        <!-- Основная область -->
         <main class="main-content">
             <header class="top-header">
                 <h1>Профиль</h1>
@@ -27,56 +73,50 @@
 
             <section class="content-body">
                 <div class="profile-wrapper">
-
-                    <!-- Верхняя карточка с аватаром -->
+                    <!-- Карточка с аватаром -->
                     <div class="profile-card">
-                        <div class="avatar-container" title="Нажмите, чтобы загрузить фото">
-                            <!-- Заглушка с инициалами -->
-                            <div class="avatar-placeholder" id="avatarPlaceholder">📸</div>
-                            <!-- Превью загруженного аватара -->
+                        <div class="avatar-container">
+                            <div class="avatar-placeholder" id="avatarPlaceholder">?</div>
                             <img src="" alt="Аватар" class="user-avatar" id="avatarPreview" style="display:none;">
-                            <!-- Иконка камеры при наведении -->
-                            <label for="avatarInput" class="avatar-overlay">📷</label>
+                            
+                            <!-- Кнопка загрузки фото (иконка камеры) -->
+                            <label for="avatarInput" class="avatar-overlay" title="Загрузить фото">📷</label>
                             <input type="file" id="avatarInput" accept="image/*" hidden>
                         </div>
 
                         <div class="profile-info-section">
-                            <h2 class="profile-name" id="profileNameDisplay">Ваше имя</h2>
-                            <p class="profile-role" id="profileRoleDisplay">Ваша должность</p>
+                            <h2 class="profile-name" id="profileNameDisplay">Загрузка...</h2>
+                            <p class="profile-role" id="profileRoleDisplay">Загрузка...</p>
                             <span class="profile-badge">Активный сотрудник</span>
                             <div>
-                                <button class="btn-remove-avatar" id="removeAvatarBtn" type="button" style="display:none;">
+                                <button class="btn-remove-avatar" id="removeAvatarBtn" type="button" style="display:none; color: red; background: none; border: none; cursor: pointer; padding: 0; margin-top: 10px;">
                                     Удалить фото
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Карточка редактирования -->
+                    <!-- Карточка формы -->
                     <div class="profile-form-card">
                         <h3>Личная информация</h3>
                         <form class="profile-form" id="profileForm">
                             <div class="form-group">
                                 <label for="userName">Имя пользователя</label>
-                                <input type="text" id="userName" value="Иван Иванов" required>
+                                <input type="text" id="userName" placeholder="Введите имя" required>
                             </div>
                             <div class="form-group">
                                 <label for="userEmail">Email</label>
-                                <input type="email" id="userEmail" value="ivan@example.com" required>
+                                <input type="email" id="userEmail" placeholder="Введите email" required>
                             </div>
                             <div class="form-group">
                                 <label for="userRole">Должность</label>
-                                <input type="text" id="userRole" value="Разработчик">
+                                <input type="text" id="userRole" placeholder="Например: Разработчик">
                             </div>
-                            <div class="form-group">
-                                <label for="userBio">О себе</label>
-                                <textarea id="userBio" rows="4" placeholder="Расскажите о себе...">Люблю чистый код и канбан-доски.</textarea>
-                            </div>
+                            
                             <button type="submit" class="btn-save-profile">Сохранить изменения</button>
-                            <button type="button" id="logoutBtn" class="btn-remove-avatar" style="align-self:flex-start;">Выйти из аккаунта</button>
+                            <button type="button" id="logoutBtn" style="background:none; border:none; color:#d93025; cursor:pointer; margin-top:15px; padding:0; align-self: flex-start;">Выйти из аккаунта</button>
                         </form>
                     </div>
-
                 </div>
             </section>
         </main>
@@ -84,112 +124,128 @@
 
     <script src="api.js"></script>
     <script>
-        const avatarInput        = document.getElementById('avatarInput');
-        const avatarPreview      = document.getElementById('avatarPreview');
-        const avatarPlaceholder  = document.getElementById('avatarPlaceholder');
-        const removeAvatarBtn    = document.getElementById('removeAvatarBtn');
         const userNameInput      = document.getElementById('userName');
+        const userEmailInput     = document.getElementById('userEmail');
         const userRoleInput      = document.getElementById('userRole');
         const profileNameDisplay = document.getElementById('profileNameDisplay');
         const profileRoleDisplay = document.getElementById('profileRoleDisplay');
         const profileForm        = document.getElementById('profileForm');
+        
+        const avatarInput        = document.getElementById('avatarInput');
+        const avatarPreview      = document.getElementById('avatarPreview');
+        const avatarPlaceholder  = document.getElementById('avatarPlaceholder');
+        const removeAvatarBtn    = document.getElementById('removeAvatarBtn');
 
-        // Получить инициалы из ФИО (первые буквы первых двух слов)
+        let currentAvatarBase64 = null;
+
         function getInitials(name) {
             if (!name || !name.trim()) return '?';
-            return name.trim().split(/\s+/)
-                .map(w => w[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase();
+            return name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
         }
 
-        // 📷 Загрузка аватара через FileReader
+        // ЗАГРУЗКА ПРОФИЛЯ
+        (async function loadProfile() {
+            try {
+                const user = await api.request('/users/me'); 
+                
+                userNameInput.value = user.name || '';
+                userEmailInput.value = user.email || '';
+                userRoleInput.value = user.role || 'DEVELOPER';
+                
+                profileNameDisplay.textContent = user.name || 'Без имени';
+                profileRoleDisplay.textContent = user.role === 'DEVELOPER' ? 'Разработчик' : (user.role || 'Не указано');
+                
+                if (user.avatar) {
+                    currentAvatarBase64 = user.avatar;
+                    avatarPreview.src = user.avatar;
+                    avatarPreview.style.display = 'block';
+                    avatarPlaceholder.style.display = 'none';
+                    removeAvatarBtn.style.display = 'block';
+                } else {
+                    avatarPlaceholder.textContent = getInitials(user.name);
+                }
+            } catch (err) { 
+                console.error("Ошибка загрузки:", err.message); 
+            }
+        })();
+
+        // ЗАГРУЗКА НОВОГО ФОТО
         avatarInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
+            if (file.size > 2 * 1024 * 1024) {
+                return alert('Файл слишком большой. Максимум 2 МБ.');
+            }
+
             const reader = new FileReader();
             reader.onload = (ev) => {
-                avatarPreview.src = ev.target.result;
+                currentAvatarBase64 = ev.target.result;
+                avatarPreview.src = currentAvatarBase64;
                 avatarPreview.style.display = 'block';
                 avatarPlaceholder.style.display = 'none';
-                removeAvatarBtn.style.display = 'inline-block';
+                removeAvatarBtn.style.display = 'block';
             };
             reader.readAsDataURL(file);
         });
 
-        // ❌ Удаление аватара (возврат к заглушке с инициалами)
+        // УДАЛЕНИЕ ФОТО
         removeAvatarBtn.addEventListener('click', () => {
+            currentAvatarBase64 = null;
             avatarPreview.src = '';
             avatarPreview.style.display = 'none';
             avatarPlaceholder.style.display = 'flex';
+            avatarPlaceholder.textContent = getInitials(userNameInput.value);
             removeAvatarBtn.style.display = 'none';
             avatarInput.value = '';
         });
 
-        // 🔄 Обновление имени и инициалов в реальном времени
         userNameInput.addEventListener('input', (e) => {
             const val = e.target.value;
             profileNameDisplay.textContent = val || 'Без имени';
-            avatarPlaceholder.textContent = getInitials(val);
+            if (avatarPreview.style.display === 'none') {
+                avatarPlaceholder.textContent = getInitials(val);
+            }
         });
 
-        // 🔄 Обновление должности в реальном времени
         userRoleInput.addEventListener('input', (e) => {
             profileRoleDisplay.textContent = e.target.value || 'Не указано';
         });
 
-        // 💾 Имитация сохранения формы
-        // Загрузка профиля с сервера
-        (async function loadProfile() {
-            try {
-                const p = await api.request('/profile');
-                userNameInput.value = p.full_name || p.username;
-                document.getElementById('userEmail').value = p.email || '';
-                userRoleInput.value = p.role || '';
-                document.getElementById('userBio').value = p.bio || '';
-                profileNameDisplay.textContent = userNameInput.value || 'Без имени';
-                profileRoleDisplay.textContent = userRoleInput.value || 'Не указано';
-                avatarPlaceholder.textContent = getInitials(userNameInput.value);
-                if (p.avatar) {
-                    avatarPreview.src = p.avatar;
-                    avatarPreview.style.display = 'block';
-                    avatarPlaceholder.style.display = 'none';
-                    removeAvatarBtn.style.display = 'inline-block';
-                }
-            } catch (err) { console.error(err.message); }
-        })();
-
-        // Сохранение профиля на сервер
+        // СОХРАНЕНИЕ
         profileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = profileForm.querySelector('.btn-save-profile');
-            const original = btn.textContent;
+            const originalText = btn.textContent;
+            btn.textContent = 'Сохранение...';
+            btn.disabled = true;
+
             try {
-                await api.request('/profile', {
-                    method: 'PUT',
+                await api.request('/users/me', {
+                    method: 'PUT', 
                     body: {
-                        full_name: userNameInput.value.trim(),
-                        email: document.getElementById('userEmail').value.trim(),
+                        name: userNameInput.value.trim(),
+                        email: userEmailInput.value.trim(),
                         role: userRoleInput.value.trim(),
-                        bio: document.getElementById('userBio').value,
-                        avatar: avatarPreview.style.display === 'none' ? null : avatarPreview.src
+                        avatar: currentAvatarBase64
                     }
                 });
+                
                 btn.textContent = '✓ Сохранено';
                 btn.style.background = '#216e2c';
             } catch (err) {
-                btn.textContent = '✕ ' + err.message;
+                btn.textContent = '✕ Ошибка';
                 btn.style.background = '#d93025';
+                alert('Не удалось сохранить: ' + err.message);
             }
+            
             setTimeout(() => {
-                btn.textContent = original;
+                btn.textContent = originalText;
                 btn.style.background = '';
+                btn.disabled = false;
             }, 2000);
         });
 
-        // Выход из аккаунта
         document.getElementById('logoutBtn').addEventListener('click', () => api.logout());
     </script>
 </body>
